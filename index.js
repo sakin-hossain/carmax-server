@@ -23,7 +23,14 @@ async function run(){
         const database = client.db("carmaxDb");
         const carCollection = database.collection("packages");
 
-
+      app.post('/addCar', async (req,res)=>{
+        const result = await carCollection.insertOne(req.body);
+        res.send(result);
+      });
+      app.get('/addCar', async (req,res)=>{
+        const result = await carCollection.find({}).toArray();
+        res.json(result);
+      })
     }
     finally{
         // await
