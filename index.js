@@ -21,21 +21,25 @@ async function run(){
     try{
         await client.connect();
         const database = client.db("carmaxDb");
-        const carCollection = database.collection("packages");
+        const carCollection = database.collection("cars");
 
       app.post('/addCar', async (req,res)=>{
         const result = await carCollection.insertOne(req.body);
         res.send(result);
+        console.log(result);
       });
       app.get('/addCar', async (req,res)=>{
         const result = await carCollection.find({}).toArray();
         res.json(result);
-      })
+      });
     }
     finally{
         // await
     }
 }
+
+run().catch(console.dir);
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
