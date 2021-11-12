@@ -24,6 +24,8 @@ async function run(){
         const database = client.db("carmaxDb");
         const carCollection = database.collection("cars");
         const ordersCollection = database.collection("orders");
+        const usersCollection = database.collection("users")
+        const usersReview = database.collection("users_review")
 
       app.post('/addCar', async (req,res)=>{
         const result = await carCollection.insertOne(req.body);
@@ -39,23 +41,106 @@ async function run(){
         const car = await carCollection.findOne(query);
         res.send(car);
     });
-      app.get('/myOrders', async(req,res)=>{
-        const email = req.query.email;
-        const query = {email: email}
-        const cursor =  await ordersCollection.find({query});
-        const orders = await cursor.toArray();
-        res.json(orders);
-      });
       app.post('/myOrders', async(req,res)=>{
         const result = await ordersCollection.insertOne(req.body);
         res.send(result);
     });
-    app.delete('/myOrders/:id', async(req,res)=>{
-      const query = {_id: ObjectId(req.params.id)};
-      const result = await ordersCollection.deleteOne(query);
-      res.json(result);
-  });
-    }
+      app.get('/myOrders', async (req, res) => {
+      const result = await ordersCollection.find({}).toArray();
+      res.send(result)
+    });
+      app.get('/myOrders/:email', async (req, res) => {
+      const email = req.params.email;
+      const result = await ordersCollection.find({ email: { $regex: email } }).toArray();
+      res.send(result);    
+    });
+    //Review GET API
+     app.get('/reviews', async (req, res) => {
+      const result = await usersReview.find({}).toArray();
+      res.send(result)
+    });
+    //Admin status checking
+      app.get('/users/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === 'admin') {
+          isAdmin = true;
+      }
+      res.send({ admin: isAdmin })
+    });
+    //POST API for review
+    app.post('/reviews', async (req, res) => {
+      const review = req.body
+      const result = await usersReview.insertOne(review)
+      res.send(result)
+    })
+    //User POST API
+    app.post('/users', async (req, res) => {
+        const user = req.body;
+        const result = await usersCollection.insertOne(user);
+        console.log(result);
+        res.send(result);
+    });
+    //User PUT API
+    app.put('/users', async (req, res) => {
+        const user = req.body;
+        const filter = { email: user.email };
+        const options = { upsert: true };
+        const updateDoc = { $set: user };
+        const result = await usersCollection.updateOne(filter, updateDoc, options);
+        res.send(result);
+    });
+    //Admin role
+    app.put('/users/:email', async (req, res) => {
+        const user = req.params;
+        const filter = { email: user.email };
+        const found = await usersCollection.findOne(filter)
+        if (found?.role) {
+            res.send({ isAdmin: true });
+            return;
+        }
+        const updateRole = {
+            $set: {
+                role: 'admin'
+            }
+        }
+        const options = { upsert: true };
+        const result = await usersCollection.updateOne(filter, updateRole, options);
+        res.send(result);
+    });
+    //Update order status
+    app.put('/myOrders/:id', async (req, res) => {
+        const id = req.params.id
+        const reqStatus = req.body.status
+        const filter = { _id: ObjectId(id) }
+        // const option = { upsert: true }
+        const updatedStatus = {
+            $set: {
+                status: reqStatus
+            }
+        }
+        const result = await ordersCollection.updateOne(filter, updatedStatus)
+        res.send(result);
+    })
+
+    //Delete Service API
+    app.delete('/addCar/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await carCollection.deleteOne(query);
+        res.json(result);
+    })
+
+    //Delete API for booked item
+    app.delete('/myOrders/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await ordersCollection.deleteOne(query);
+        res.json(result);
+    })
+  }
     finally{
         // await
     }
