@@ -39,10 +39,10 @@ async function run(){
         const car = await carCollection.findOne(query);
         res.send(car);
     });
-      app.get('/myOrders', (req,res)=>{
+      app.get('/myOrders', async(req,res)=>{
         const email = req.query.email;
         const query = {email: email}
-        const cursor = await ordersCollection.find({query});
+        const cursor =  await ordersCollection.find({query});
         const orders = await cursor.toArray();
         res.json(orders);
       });
