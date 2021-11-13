@@ -97,8 +97,12 @@ async function run(){
         const user = req.params;
         const filter = { email: user.email };
         const found = await usersCollection.findOne(filter)
-        if (found?.role) {
-            res.send({ isAdmin: true });
+        if (!found) {
+            res.send({ isRegistered: false });
+            return;
+        }
+        if (found?.role === "admin") {
+            res.send({ isAdmin:true });
             return;
         }
         const updateRole = {
