@@ -87,14 +87,14 @@ async function run(){
     app.put('/users', async (req, res) => {
         const user = req.body;
         const filter = { email: user.email };
-        const options = { upsert: true };
+        // const options = { upsert: true };
         const updateDoc = { $set: user };
-        const result = await usersCollection.updateOne(filter, updateDoc, options);
+        const result = await usersCollection.updateOne(filter, updateDoc);
         res.send(result);
     });
     //Admin role
     app.put('/users/:email', async (req, res) => {
-        const user = req.params;
+        const email = req.params.email;
         const filter = { email: email };
         const found = await usersCollection.findOne(filter)
         if (!found) {
