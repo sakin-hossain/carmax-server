@@ -110,8 +110,7 @@ async function run(){
                 role: 'admin'
             }
         }
-        const options = { upsert: true };
-        const result = await usersCollection.updateOne(filter, updateRole, options);
+        const result = await usersCollection.updateOne(filter, updateRole);
         res.send(result);
     });
     //Update order status
