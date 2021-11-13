@@ -95,7 +95,7 @@ async function run(){
     //Admin role
     app.put('/users/:email', async (req, res) => {
         const user = req.params;
-        const filter = { email: user.email };
+        const filter = { email: email };
         const found = await usersCollection.findOne(filter)
         if (!found) {
             res.send({ isRegistered: false });
